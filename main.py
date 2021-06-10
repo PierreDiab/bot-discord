@@ -4,6 +4,13 @@ import os
 import requests
 import shutil
 
+'''
+Just a space to configure informations about the files
+'''
+TrollFacePath = "TrollFace.jpeg"
+debug = True
+AvatarPNGPath = "pers.png"
+
 BLACK = (0, 0, 0, 0)
 
 client = ds.Client()
@@ -32,7 +39,8 @@ async def on_message(message):
 
     if message.content.lower() == "%help":
         await message.channel.send("**%compliment** (vous pouvez mentionner quelqu'un)\n"
-                                   "**%titanic%** (mention obligatoire)")
+                                   "**%titanic%** (mention obligatoire)\n"
+                                   "**%troll** (vous pouvez mentionner quelqu'un)")
 
     if message.content.lower().startswith("%compliment"):
         if len(message.mentions) == 0:
@@ -128,5 +136,31 @@ async def on_message(message):
             await message.channel.send(file=picture)
         os.remove("pers.png")
         os.remove("thinking.png")
-
-client.run("")
+    if message.content.lower().startswith("%troll"):
+        debug("Création de l'image troll")
+        debug("\t- détection de la personne à mettre sur l'image ...")
+        if not len(message.mentions):
+            debug("\t\t- pas de mentions, utilisation du nom de l'auteur")
+            PlayToTroll = message.author
+        elif len(message.mentions) == 1:
+            debug("\t\t- une mention, on prend donc celle-ci")
+            PlayToTroll = message.mentions[0]
+        elif len(message.mentions) > 1:
+            debug("\t\t- trop de mentions, on prend juste la première")
+            PlayToTroll = message.mentions[0]
+        else:
+            debug("\t\t- erreur avec les mentions, on prend l'auteur")
+            PlayToTroll = message.author
+        debug("\t- récupération de la photo de profil ...")
+        pers = requests.get("https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(PlayToTroll), stream=True)
+        if pers.status_code == 200:
+            pers.raw.decode_content = True
+            with open(AvatarPNGPath, 'wb') as f:
+                shutil.copyfileobj(pers.raw, f)
+            f.close()
+            debug("\t\t- photo téléchargée !")
+        else:
+            debug("\t\t- erreur durant le téléchargement de la photo :/")
+def debug(text):
+    if debug: print("[DEBUG] " + str(text))
+    else: pass
