@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw
 import os
 import requests
 import shutil
+from bs4 import BeautifulSoup
 
 '''
 Just a space to configure informations about the files
