@@ -40,7 +40,8 @@ async def on_message(message):
     if message.content.lower() == "%help":
         await message.channel.send("**%compliment** (vous pouvez mentionner quelqu'un)\n"
                                    "**%titanic%** (mention obligatoire)\n"
-                                   "**%troll** (vous pouvez mentionner quelqu'un)")
+                                   "**%troll** (vous pouvez mentionner quelqu'un)\n"
+                                   "**%vdm** (vdm aléatoire)")
 
     if message.content.lower().startswith("%compliment"):
         if len(message.mentions) == 0:
@@ -136,6 +137,7 @@ async def on_message(message):
             await message.channel.send(file=picture)
         os.remove("pers.png")
         os.remove("thinking.png")
+        
     if message.content.lower().startswith("%troll"):
         debug("Création de l'image troll")
         debug("\t- détection de la personne à mettre sur l'image ...")
@@ -161,6 +163,14 @@ async def on_message(message):
             debug("\t\t- photo téléchargée !")
         else:
             debug("\t\t- erreur durant le téléchargement de la photo :/")
+            
+    if message.content.lower() == "%vdm":
+        vdm_url = "https://www.viedemerde.fr/aleatoire"
+        vdm_html = requests.get(vdm_url).text
+        soup = BeautifulSoup(vdm_html, 'html.parser')
+        site = soup.find("a", {"class": "article-link"}).getText()
+        await message.channel.send(site)
+        
 def debug(text):
     if debug: print("[DEBUG] " + str(text))
     else: pass
