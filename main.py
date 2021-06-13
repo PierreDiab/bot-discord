@@ -211,4 +211,4 @@ async def on_message(message):
 def debug(text):
     if debug: print("[DEBUG] " + str(text))
     else: pass
-client.run("ODUyNDE5MzE3NzU2NDYxMDc2.YMGjWg.3BHHbHp2ox8ygyDO70m2ls-GgQk")
+client.run("")
