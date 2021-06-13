@@ -4,6 +4,9 @@ import os
 import requests
 import shutil
 from bs4 import BeautifulSoup
+try:
+    import imageio
+except: os.system('pip3 install imageio')
 
 '''
 Just a space to configure informations about the files
@@ -162,9 +165,42 @@ async def on_message(message):
                 shutil.copyfileobj(pers.raw, f)
             f.close()
             debug("\t\t- photo téléchargée !")
+            debug("Création du montage ...")
+            TrollImg = Image.open(TrollFacePath)
+            AvatarImg = Image.open(AvatarPNGPath)
+            new = Image.new("RGBA", (1000,1000))
+            img = Image.open(TrollFacePath)
+            img = img.resize((1000, 1000))
+            new.paste(img, (0,0))
+            img = Image.open(AvatarPNGPath)
+            img = img.resize((250, 250))
+            rond(img)
+            new.paste(img, (275, 200), img)
+            new.paste(img, (550, 200), img)
+            new.save("TrollResult.png")
+            TrollImg.close()
+            AvatarImg.close()
+            img = Image.open("TrollResult.png")
+            for x in range(0, 1000):
+                for y in range(0, 1000):
+                        r = img.getpixel((x, y))[0]
+                        g = img.getpixel((x, y))[1] #Quelle optimisation ... x)
+                        b = img.getpixel((x, y))[2]
+                        newr = 255 - r
+                        newg = 255 - g
+                        newb = 255 - b
+                        img.putpixel((x, y), (newr, newg, newb, 255))
+            img.save("ReverseTrollResult.png")
+            debug("Création du gif ...")
+            images = []
+            images.append(imageio.imread("TrollResult.png"))
+            images.append(imageio.imread("ReverseTrollResult.png"))
+            imageio.mimsave('Troll.gif', images)
+            with open('Troll.gif', 'rb') as f:
+                picture = ds.File(f)
+                await message.channel.send(file=picture)
         else:
             debug("\t\t- erreur durant le téléchargement de la photo :/")
-            
     if message.content.lower() == "%vdm":
         vdm_url = "https://www.viedemerde.fr/aleatoire"
         vdm_html = requests.get(vdm_url).text
@@ -175,3 +211,4 @@ async def on_message(message):
 def debug(text):
     if debug: print("[DEBUG] " + str(text))
     else: pass
+client.run("ODUyNDE5MzE3NzU2NDYxMDc2.YMGjWg.3BHHbHp2ox8ygyDO70m2ls-GgQk")
