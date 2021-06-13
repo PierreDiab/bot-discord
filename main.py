@@ -54,8 +54,8 @@ async def on_message(message):
         await message.channel.send("**%compliment** (vous pouvez mentionner quelqu'un)\n"
                                    "**%titanic%** (mention obligatoire)\n"
                                    "**%troll** (vous pouvez mentionner quelqu'un)\n"
-                                   "**%vdm** (vdm aléatoire)"
-                                   "**%pileouface** ou **%pof** (pile ou face)"
+                                   "**%vdm** (vdm aléatoire)\n"
+                                   "**%pileouface** ou **%pof** (pile ou face)\n"
                                    "**%cherche [quelque chose]** (cherche l'image que vous voulez)")
 
     if message.content.lower().startswith("%compliment"):
@@ -221,7 +221,45 @@ async def on_message(message):
         soup = BeautifulSoup(vdm_html, 'html.parser')
         site = soup.find("a", {"class": "article-link"}).getText()
         await message.channel.send(site)
-
+    if message.content.lower().startswith("%tennis"):
+        debug("Tennis image ...")
+        if len(message.mentions) == 1:
+            aut = requests.get(
+                "https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(message.author),
+                stream=True)
+            dest = requests.get(
+                "https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(message.mentions[0]),
+                stream=True)
+            dl = [aut, dest]
+            for pers in dl:
+                nom = "icone" + str(dl.index(pers)) + ".png"
+                if pers.status_code == 200:
+                    pers.raw.decode_content = True
+                    with open(nom, 'wb') as f:
+                        shutil.copyfileobj(pers.raw, f)
+                if True:
+                    debug('Image sucessfully Downloaded: ' + nom)
+                    debug("Création de l'image finale ...")
+                    new = Image.new("RGBA", (1500,1000))
+                    background = Image.open("tennis.jpg")
+                    background = background.resize((1500, 1000))
+                    new.paste(background, (0, 0))
+                    Author = Image.open("icone0.png")
+                    rond(Author)
+                    Author = Author.resize((120, 120))
+                    Dest = Image.open("icone1.png")
+                    rond(Dest)
+                    Dest = Dest.resize((200, 200))
+                    new.paste(Author, (480, 395), Author)
+                    new.paste(Dest, (700, 10), Dest)
+                    new.save("TennisResult.png")
+                    with open('TennisResult.png', 'rb') as f:
+                        picture = ds.File(f)
+                        await message.channel.send(file=picture)
+                else:
+                    debug('Image Couldn\'t be retreived')
+        else:
+            await message.channel.send("Vous devez mentionner quelqu'un !")
     if message.content.lower().startswith("%pileouface") or message.content.lower().startswith("%pof"):
         msg = message.content.lower().split()
         debug(msg)
@@ -269,4 +307,4 @@ def debug(text):
     else:
         pass
    
-client.run("")
+client.run("ODUyNDE5MzE3NzU2NDYxMDc2.YMGjWg.8zJcnlLqpQD-KIKdLtI5M5CJfz8")
