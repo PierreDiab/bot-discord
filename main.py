@@ -3,10 +3,15 @@ from PIL import Image, ImageDraw
 import os
 import requests
 import shutil
+import discord as ds
+from PIL import Image, ImageDraw
+import os
+import requests
+import shutil
 from bs4 import BeautifulSoup
-try:
-    import imageio
-except: os.system('pip3 install imageio')
+from random import randint
+from pixabay import Image as Imgg
+import imageio
 
 '''
 Just a space to configure informations about the files
@@ -18,6 +23,10 @@ AvatarPNGPath = "pers.png"
 BLACK = (0, 0, 0, 0)
 
 client = ds.Client()
+
+# key for the pixbay api
+API_KEY = ''
+image = Imgg(API_KEY)
 
 
 def rond(imgg):
@@ -45,7 +54,9 @@ async def on_message(message):
         await message.channel.send("**%compliment** (vous pouvez mentionner quelqu'un)\n"
                                    "**%titanic%** (mention obligatoire)\n"
                                    "**%troll** (vous pouvez mentionner quelqu'un)\n"
-                                   "**%vdm** (vdm aléatoire)")
+                                   "**%vdm** (vdm aléatoire)"
+                                   "**%pileouface** ou **%pof** (pile ou face)"
+                                   "**%cherche [quelque chose]** (cherche l'image que vous voulez)")
 
     if message.content.lower().startswith("%compliment"):
         if len(message.mentions) == 0:
@@ -109,7 +120,7 @@ async def on_message(message):
             os.remove("titan.jpg")
         else:
             await message.channel.send("Vous devez identifier une personne !")
-            
+
     if message.content.lower().startswith("%thinking"):
         pers = ""
         if len(message.mentions) > 1:
@@ -141,24 +152,25 @@ async def on_message(message):
             await message.channel.send(file=picture)
         os.remove("pers.png")
         os.remove("thinking.png")
-        
+
     if message.content.lower().startswith("%troll"):
         debug("Création de l'image troll")
         debug("\t- détection de la personne à mettre sur l'image ...")
         if not len(message.mentions):
             debug("\t\t- pas de mentions, utilisation du nom de l'auteur")
-            PlayToTroll = message.author
+            playtotroll = message.author
         elif len(message.mentions) == 1:
             debug("\t\t- une mention, on prend donc celle-ci")
-            PlayToTroll = message.mentions[0]
+            playtotroll = message.mentions[0]
         elif len(message.mentions) > 1:
             debug("\t\t- trop de mentions, on prend juste la première")
-            PlayToTroll = message.mentions[0]
+            playtotroll = message.mentions[0]
         else:
             debug("\t\t- erreur avec les mentions, on prend l'auteur")
-            PlayToTroll = message.author
+            playtotroll = message.author
         debug("\t- récupération de la photo de profil ...")
-        pers = requests.get("https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(PlayToTroll), stream=True)
+        pers = requests.get("https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(playtotroll),
+                            stream=True)
         if pers.status_code == 200:
             pers.raw.decode_content = True
             with open(AvatarPNGPath, 'wb') as f:
@@ -166,49 +178,95 @@ async def on_message(message):
             f.close()
             debug("\t\t- photo téléchargée !")
             debug("Création du montage ...")
-            TrollImg = Image.open(TrollFacePath)
-            AvatarImg = Image.open(AvatarPNGPath)
-            new = Image.new("RGBA", (1000,1000))
+            trollimg = Image.open(TrollFacePath)
+            avatarimg = Image.open(AvatarPNGPath)
+            new = Image.new("RGBA", (1000, 1000))
             img = Image.open(TrollFacePath)
             img = img.resize((1000, 1000))
-            new.paste(img, (0,0))
+            new.paste(img, (0, 0))
             img = Image.open(AvatarPNGPath)
             img = img.resize((250, 250))
             rond(img)
             new.paste(img, (275, 200), img)
             new.paste(img, (550, 200), img)
             new.save("TrollResult.png")
-            TrollImg.close()
-            AvatarImg.close()
+            trollimg.close()
+            avatarimg.close()
             img = Image.open("TrollResult.png")
             for x in range(0, 1000):
                 for y in range(0, 1000):
-                        r = img.getpixel((x, y))[0]
-                        g = img.getpixel((x, y))[1] #Quelle optimisation ... x)
-                        b = img.getpixel((x, y))[2]
-                        newr = 255 - r
-                        newg = 255 - g
-                        newb = 255 - b
-                        img.putpixel((x, y), (newr, newg, newb, 255))
+                    r = img.getpixel((x, y))[0]
+                    g = img.getpixel((x, y))[1]  # Quelle optimisation ... x)
+                    b = img.getpixel((x, y))[2]
+                    newr = 255 - r
+                    newg = 255 - g
+                    newb = 255 - b
+                    img.putpixel((x, y), (newr, newg, newb, 255))
             img.save("ReverseTrollResult.png")
             debug("Création du gif ...")
-            images = []
-            images.append(imageio.imread("TrollResult.png"))
-            images.append(imageio.imread("ReverseTrollResult.png"))
+            images = [imageio.imread("TrollResult.png"), imageio.imread("ReverseTrollResult.png")]
             imageio.mimsave('Troll.gif', images)
             with open('Troll.gif', 'rb') as f:
                 picture = ds.File(f)
                 await message.channel.send(file=picture)
+                os.remove("TrollResult.png")
+                os.remove("ReverseTrollResult.png")
+                os.remove('Troll.gif')
         else:
             debug("\t\t- erreur durant le téléchargement de la photo :/")
+
     if message.content.lower() == "%vdm":
         vdm_url = "https://www.viedemerde.fr/aleatoire"
         vdm_html = requests.get(vdm_url).text
         soup = BeautifulSoup(vdm_html, 'html.parser')
         site = soup.find("a", {"class": "article-link"}).getText()
         await message.channel.send(site)
-        
+
+    if message.content.lower().startswith("%pileouface") or message.content.lower().startswith("%pof"):
+        msg = message.content.lower().split()
+        debug(msg)
+        if "pile" not in msg and "face" not in msg:
+            await message.channel.send("Vous devez choisir entre pile ou face !")
+        else:
+            nmbr = randint(0, 1)
+            if nmbr == 0:
+                rep = "pile"
+            else:
+                rep = "face"
+            if rep in msg:
+                resu = "Vous avez gagné !"
+            else:
+                resu = "Vous avez perdu... :/"
+            await message.channel.send("La pièce a fait " + rep + " ! " + resu)
+
+    if message.content.lower().startswith("%cherche"):
+        msg = message.content.lower().split()
+        del msg[0]
+        recherche = " ".join(msg)
+        ims = image.search(q=recherche,
+                           lang='fr')
+        if len(ims.get('hits')) == 0:
+            await message.channel.send("Aucun résultat trouvé !")
+        else:
+            img = requests.get(ims.get('hits')[0].get('largeImageURL'), stream=True)
+            nom = "image.jpg"
+            if img.status_code == 200:
+                img.raw.decode_content = True
+                with open(nom, 'wb') as f:
+                    shutil.copyfileobj(img.raw, f)
+                print('Image sucessfully Downloaded: ', nom)
+            else:
+                print('Image Couldn\'t be retreived')
+            with open('image.jpg', 'rb') as f:
+                picture = ds.File(f)
+                await message.channel.send(message.author.mention, file=picture)
+            os.remove("image.jpg")
+
+
 def debug(text):
-    if debug: print("[DEBUG] " + str(text))
-    else: pass
+    if debug:
+        print("[DEBUG] " + str(text))
+    else:
+        pass
+   
 client.run("")
