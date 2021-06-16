@@ -195,13 +195,15 @@ async def on_message(message):
             img = Image.open("TrollResult.png")
             for x in range(0, 1000):
                 for y in range(0, 1000):
-                    r = img.getpixel((x, y))[0]
+                    '''r = img.getpixel((x, y))[0]
                     g = img.getpixel((x, y))[1]  # Quelle optimisation ... x)
                     b = img.getpixel((x, y))[2]
                     newr = 255 - r
                     newg = 255 - g
                     newb = 255 - b
-                    img.putpixel((x, y), (newr, newg, newb, 255))
+                    img.putpixel((x, y), (newr, newg, newb, 255))'''
+                    c = img.getpixel((x, y))
+                    img.putpixel((x, y), (255 - c[0], 255 - c[1], 255 - c[2], 255))
             img.save("ReverseTrollResult.png")
             debug("Création du gif ...")
             images = [imageio.imread("TrollResult.png"), imageio.imread("ReverseTrollResult.png")]
