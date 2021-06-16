@@ -208,6 +208,7 @@ async def on_message(message):
             imageio.mimsave('Troll.gif', images)
             with open('Troll.gif', 'rb') as f:
                 picture = ds.File(f)
+                await message.channel.send("@" + playtotroll)
                 await message.channel.send(file=picture)
                 os.remove("TrollResult.png")
                 os.remove("ReverseTrollResult.png")
@@ -306,5 +307,3 @@ def debug(text):
         print("[DEBUG] " + str(text))
     else:
         pass
-   
-client.run("ODUyNDE5MzE3NzU2NDYxMDc2.YMGjWg.8zJcnlLqpQD-KIKdLtI5M5CJfz8")
